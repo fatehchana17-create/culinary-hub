@@ -1,0 +1,26 @@
+packages:
+  "framer-motion": "Animations for page loads, staggered list reveals, and interactive elements"
+  "embla-carousel-react": "For the hero banner auto-sliding ad carousel"
+  "embla-carousel-autoplay": "Auto-play plugin for the hero banner carousel"
+  "date-fns": "For formatting freshness timers and event date ranges"
+  "clsx": "Utility for conditionally joining classNames"
+  "tailwind-merge": "Utility for intelligently merging Tailwind classes"
+  "lucide-react": "Beautiful, consistent iconography"
+  "@hookform/resolvers": "Zod integration for form validation"
+  "react-hook-form": "Performant, flexible and extensible forms with easy-to-use validation"
+
+images:
+  - path: "artifacts/restaurant/public/images/hero-placeholder.png"
+    description: "A stunning, high-end restaurant interior at warm golden hour. Rich reds, oranges, and deep amber tones. Cinematic lighting, bokeh, luxurious atmosphere."
+    aspect_ratio: "16:9"
+  - path: "artifacts/restaurant/public/images/food-placeholder.png"
+    description: "A vibrant, mouth-watering gourmet dish plated beautifully on a ceramic dark plate. Rich warm tones, steam rising, high contrast food photography."
+    aspect_ratio: "4:3"
+  - path: "artifacts/restaurant/public/images/logo.png"
+    description: "Minimalist, elegant restaurant logo featuring a stylized flame or plate in rich orange and gold tones on a transparent background."
+    aspect_ratio: "1:1"
+
+notes:
+  - Assuming @workspace/api-client-react is available for all TanStack Query hooks.
+  - Assuming API responses match the generated Orval schemas exactly.
+  - The float WhatsApp button points to a placeholder +1234567890 phone number.

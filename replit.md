@@ -1,8 +1,8 @@
-# Workspace
+# Restaurant Management System — Savoria
 
 ## Overview
 
-pnpm workspace monorepo using TypeScript. Each package manages its own dependencies.
+A full-stack Restaurant Management System built with React + Vite (frontend), Express 5 (backend), and PostgreSQL + Drizzle ORM (database). Designed for high-capacity menus (150+ items), WhatsApp ordering, admin dashboard, and live order tracking.
 
 ## Stack
 
@@ -10,87 +10,93 @@ pnpm workspace monorepo using TypeScript. Each package manages its own dependenc
 - **Node.js version**: 24
 - **Package manager**: pnpm
 - **TypeScript version**: 5.9
-- **API framework**: Express 5
+- **Frontend**: React + Vite (artifacts/restaurant), Tailwind CSS, Framer Motion, Lucide React, Embla Carousel
+- **API framework**: Express 5 (artifacts/api-server)
 - **Database**: PostgreSQL + Drizzle ORM
 - **Validation**: Zod (`zod/v4`), `drizzle-zod`
 - **API codegen**: Orval (from OpenAPI spec)
 - **Build**: esbuild (CJS bundle)
+- **Forms**: react-hook-form + @hookform/resolvers
+- **Auth**: express-session (cookie-based)
 
 ## Structure
 
 ```text
 artifacts-monorepo/
-├── artifacts/              # Deployable applications
-│   └── api-server/         # Express API server
-├── lib/                    # Shared libraries
-│   ├── api-spec/           # OpenAPI spec + Orval codegen config
-│   ├── api-client-react/   # Generated React Query hooks
-│   ├── api-zod/            # Generated Zod schemas from OpenAPI
-│   └── db/                 # Drizzle ORM schema + DB connection
-├── scripts/                # Utility scripts (single workspace package)
-│   └── src/                # Individual .ts scripts, run via `pnpm --filter @workspace/scripts run <script>`
-├── pnpm-workspace.yaml     # pnpm workspace (artifacts/*, lib/*, lib/integrations/*, scripts)
-├── tsconfig.base.json      # Shared TS options (composite, bundler resolution, es2022)
-├── tsconfig.json           # Root TS project references
-└── package.json            # Root package with hoisted devDeps
+├── artifacts/
+│   ├── api-server/          # Express 5 API server
+│   └── restaurant/          # React + Vite frontend (public menu + admin)
+├── lib/
+│   ├── api-spec/            # OpenAPI spec + Orval codegen config
+│   ├── api-client-react/    # Generated React Query hooks
+│   ├── api-zod/             # Generated Zod schemas from OpenAPI
+│   └── db/                  # Drizzle ORM schema + DB connection
+├── scripts/                 # Utility scripts
+├── pnpm-workspace.yaml
+├── tsconfig.base.json
+└── tsconfig.json
 ```
 
-## TypeScript & Composite Projects
+## Database Schema
 
-Every package extends `tsconfig.base.json` which sets `composite: true`. The root `tsconfig.json` lists all packages as project references. This means:
+- `menu_items` — id, name, category, price (numeric), image_url, prep_time_limit (int mins), is_available, created_at
+- `events` — id, name, discount_percentage (numeric), start_date, end_date, is_active
+- `orders` — id, item_details (jsonb), total_price (numeric), customer_info (jsonb), status, created_at
+- `ads` — id, image_url, title, sub_text, link, is_active
 
-- **Always typecheck from the root** — run `pnpm run typecheck` (which runs `tsc --build --emitDeclarationOnly`). This builds the full dependency graph so that cross-package imports resolve correctly. Running `tsc` inside a single package will fail if its dependencies haven't been built yet.
-- **`emitDeclarationOnly`** — we only emit `.d.ts` files during typecheck; actual JS bundling is handled by esbuild/tsx/vite...etc, not `tsc`.
-- **Project references** — when package A depends on package B, A's `tsconfig.json` must list B in its `references` array. `tsc --build` uses this to determine build order and skip up-to-date packages.
+## API Routes (all prefixed /api)
 
-## Root Scripts
+- `GET/POST /menu` — list (paginated, filterable by category/search) / create menu items
+- `GET/PUT/DELETE /menu/:id` — get/update/delete menu item
+- `GET /menu/categories` — distinct categories
+- `GET/POST /events` — list/create events
+- `GET /events/active` — get the currently active event (date-range based)
+- `PUT/DELETE /events/:id` — update/delete event
+- `GET/POST /orders` — list (paginated, filterable by status) / place order
+- `PATCH /orders/:id/status` — update order status
+- `GET/POST /ads` — list/create ads
+- `GET /ads/active` — list active ads for hero banner
+- `PUT/DELETE /ads/:id` — update/delete ad
+- `POST /auth/login` — admin login (session cookie)
+- `POST /auth/logout` — admin logout
+- `GET /auth/me` — check auth status
 
-- `pnpm run build` — runs `typecheck` first, then recursively runs `build` in all packages that define it
-- `pnpm run typecheck` — runs `tsc --build --emitDeclarationOnly` using project references
+## Admin Credentials (default)
+- Username: `admin`
+- Password: `restaurant2024`
+- Change via env vars: `ADMIN_USERNAME`, `ADMIN_PASSWORD`
 
-## Packages
+## Frontend Pages
 
-### `artifacts/api-server` (`@workspace/api-server`)
+- `/` — Public menu with hero carousel, category filters, pagination, freshness timers, WhatsApp ordering, floating WhatsApp widget
+- `/admin/login` — Admin login page
+- `/admin` — Live orders dashboard (auto-refreshes every 10s)
+- `/admin/menu` — CRUD for menu items
+- `/admin/events` — CRUD for events/discounts
+- `/admin/ads` — CRUD for hero banner ads
 
-Express 5 API server. Routes live in `src/routes/` and use `@workspace/api-zod` for request and response validation and `@workspace/db` for persistence.
+## Key Features
 
-- Entry: `src/index.ts` — reads `PORT`, starts Express
-- App setup: `src/app.ts` — mounts CORS, JSON/urlencoded parsing, routes at `/api`
-- Routes: `src/routes/index.ts` mounts sub-routers; `src/routes/health.ts` exposes `GET /health` (full path: `/api/health`)
-- Depends on: `@workspace/db`, `@workspace/api-zod`
-- `pnpm --filter @workspace/api-server run dev` — run the dev server
-- `pnpm --filter @workspace/api-server run build` — production esbuild bundle (`dist/index.cjs`)
-- Build bundles an allowlist of deps (express, cors, pg, drizzle-orm, zod, etc.) and externalizes the rest
+- **Event discount logic**: `GET /api/events/active` checks current date against start_date/end_date. Active event shows original price (strikethrough) + discounted price on menu cards.
+- **Freshness Timer**: Live countdown based on `prepTimeLimit` minutes showing "Ready in X mins (at HH:MM AM/PM)"
+- **WhatsApp ordering**: POST to `/api/orders` then opens `https://wa.me/PHONE?text=...` with pre-filled order summary
+- **Floating WhatsApp bubble**: Fixed bottom-right persistent widget
+- **Staggered animations**: Framer Motion fade-in for menu cards
+- **Infinite pagination**: Page-based pagination for 150+ items
+- **Session auth**: HTTP-only cookie sessions for admin, credentials sent with `credentials: "include"` in all API calls
 
-### `lib/db` (`@workspace/db`)
+## Environment Variables
 
-Database layer using Drizzle ORM with PostgreSQL. Exports a Drizzle client instance and schema models.
+- `DATABASE_URL` — PostgreSQL connection string (auto-set by Replit)
+- `SESSION_SECRET` — Secret for express-session (default: "restaurant-secret-key-change-in-prod")
+- `ADMIN_USERNAME` — Admin username (default: "admin")
+- `ADMIN_PASSWORD` — Admin password (default: "restaurant2024")
+- `PORT` — Server port (auto-assigned by Replit)
 
-- `src/index.ts` — creates a `Pool` + Drizzle instance, exports schema
-- `src/schema/index.ts` — barrel re-export of all models
-- `src/schema/<modelname>.ts` — table definitions with `drizzle-zod` insert schemas (no models definitions exist right now)
-- `drizzle.config.ts` — Drizzle Kit config (requires `DATABASE_URL`, automatically provided by Replit)
-- Exports: `.` (pool, db, schema), `./schema` (schema only)
+## Deployment Notes (Vercel/Neon.tech)
 
-Production migrations are handled by Replit when publishing. In development, we just use `pnpm --filter @workspace/db run push`, and we fallback to `pnpm --filter @workspace/db run push-force`.
-
-### `lib/api-spec` (`@workspace/api-spec`)
-
-Owns the OpenAPI 3.1 spec (`openapi.yaml`) and the Orval config (`orval.config.ts`). Running codegen produces output into two sibling packages:
-
-1. `lib/api-client-react/src/generated/` — React Query hooks + fetch client
-2. `lib/api-zod/src/generated/` — Zod schemas
-
-Run codegen: `pnpm --filter @workspace/api-spec run codegen`
-
-### `lib/api-zod` (`@workspace/api-zod`)
-
-Generated Zod schemas from the OpenAPI spec (e.g. `HealthCheckResponse`). Used by `api-server` for response validation.
-
-### `lib/api-client-react` (`@workspace/api-client-react`)
-
-Generated React Query hooks and fetch client from the OpenAPI spec (e.g. `useHealthCheck`, `healthCheck`).
-
-### `scripts` (`@workspace/scripts`)
-
-Utility scripts package. Each script is a `.ts` file in `src/` with a corresponding npm script in `package.json`. Run scripts via `pnpm --filter @workspace/scripts run <script>`. Scripts can import any workspace package (e.g., `@workspace/db`) by adding it as a dependency in `scripts/package.json`.
+- Set `DATABASE_URL` to Neon.tech connection string
+- Set `SESSION_SECRET`, `ADMIN_USERNAME`, `ADMIN_PASSWORD` as Vercel env vars
+- Run `pnpm --filter @workspace/db run push` after deployment to sync schema
+- Frontend builds to static files (`pnpm --filter @workspace/restaurant run build`)
+- Backend builds via esbuild (`pnpm --filter @workspace/api-server run build`)
