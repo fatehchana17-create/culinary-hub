@@ -1,4 +1,4 @@
-import express, { type Express } from "express";
+import express, { type Express, type Request, type Response } from "express";
 import cors from "cors";
 import pinoHttp from "pino-http";
 import session from "express-session";
@@ -11,14 +11,14 @@ app.use(
   pinoHttp({
     logger,
     serializers: {
-      req(req) {
+      req(req: any) { // Yahan 'any' add kiya hai taake error khatam ho
         return {
           id: req.id,
           method: req.method,
           url: req.url?.split("?")[0],
         };
       },
-      res(res) {
+      res(res: any) { // Yahan bhi 'any' add kiya hai
         return {
           statusCode: res.statusCode,
         };
@@ -26,13 +26,14 @@ app.use(
     },
   }),
 );
+
 app.use(cors({ origin: true, credentials: true }));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 app.use(
   session({
-    secret: process.env.SESSION_SECRET || "restaurant-secret-key-change-in-prod",
+    secret: (process as any).env.SESSION_SECRET || "restaurant-secret-key-change-in-prod",
     resave: false,
     saveUninitialized: false,
     cookie: {
