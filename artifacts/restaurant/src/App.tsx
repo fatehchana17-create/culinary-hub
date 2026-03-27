@@ -9,6 +9,7 @@ import LiveOrders from "@/pages/admin/LiveOrders";
 import MenuItemsAdmin from "@/pages/admin/MenuItems";
 import EventsAdmin from "@/pages/admin/Events";
 import AdsAdmin from "@/pages/admin/Ads";
+import PromotionsAdmin from "@/pages/admin/Promotions";
 import NotFound from "@/pages/not-found";
 
 const queryClient = new QueryClient();
@@ -22,6 +23,7 @@ function Router() {
       <Route path="/admin/menu" component={MenuItemsAdmin} />
       <Route path="/admin/events" component={EventsAdmin} />
       <Route path="/admin/ads" component={AdsAdmin} />
+      <Route path="/admin/promotions" component={PromotionsAdmin} />
       <Route component={NotFound} />
     </Switch>
   );
