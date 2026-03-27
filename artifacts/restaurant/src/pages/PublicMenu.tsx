@@ -7,6 +7,7 @@ import {
 } from "@workspace/api-client-react";
 import { PublicLayout } from "@/components/layout/PublicLayout";
 import { HeroCarousel } from "@/components/menu/HeroCarousel";
+import { PromotionsSection } from "@/components/menu/PromotionsSection";
 import { MenuCard } from "@/components/menu/MenuCard";
 import { Button } from "@/components/ui/button";
 
@@ -41,6 +42,8 @@ export default function PublicMenu() {
   return (
     <PublicLayout>
       <HeroCarousel />
+
+      <PromotionsSection />
       
       <section id="menu" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 md:py-24">
         <div className="flex flex-col md:flex-row md:items-end justify-between mb-12 gap-6">

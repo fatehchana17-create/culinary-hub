@@ -18,6 +18,7 @@ export function PublicLayout({ children }: { children: ReactNode }) {
           </Link>
           <nav className="hidden md:flex gap-8 items-center">
             <Link href="/" className="text-sm font-semibold hover:text-primary transition-colors">Menu</Link>
+            <a href="#offers" className="text-sm font-semibold text-muted-foreground hover:text-primary transition-colors">Offers</a>
             <a href="#about" className="text-sm font-semibold text-muted-foreground hover:text-primary transition-colors">About Us</a>
             <a href="#location" className="text-sm font-semibold text-muted-foreground hover:text-primary transition-colors">Location</a>
           </nav>
