@@ -1,30 +1,31 @@
 import express, { type Express, type Request, type Response } from "express";
 import cors from "cors";
-import * as pinoHttp from "pino-http";
+import { pinoHttp } from "pino-http"; // Named import
 import session from "express-session";
 import router from "./routes";
 import { logger } from "./lib/logger";
 
 const app: Express = express();
 
+// Directly using the middleware to avoid 'not callable' error
 app.use(
-  (pinoHttp as any).default({
-    logger,
+  pinoHttp({
+    logger: logger as any,
     serializers: {
-      req(req: any) { // Yahan 'any' add kiya hai taake error khatam ho
+      req(req: any) {
         return {
           id: req.id,
           method: req.method,
           url: req.url?.split("?")[0],
         };
       },
-      res(res: any) { // Yahan bhi 'any' add kiya hai
+      res(res: any) {
         return {
           statusCode: res.statusCode,
         };
       },
     },
-  }),
+  })
 );
 
 app.use(cors({ origin: true, credentials: true }));
@@ -41,7 +42,7 @@ app.use(
       httpOnly: true,
       maxAge: 24 * 60 * 60 * 1000,
     },
-  }),
+  })
 );
 
 app.use("/api", router);
