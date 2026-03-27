@@ -3,7 +3,8 @@ import { Router, type IRouter } from "express";
 const router: IRouter = Router();
 
 const ADMIN_USERNAME = process.env.ADMIN_USERNAME || "admin";
-const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || "restaurant2024";
+const ADMIN_EMAIL = process.env.ADMIN_EMAIL || "fatehchana17@gmail.com";
+const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || "channa.1";
 
 declare module "express-serve-static-core" {
   interface Request {
@@ -13,10 +14,11 @@ declare module "express-serve-static-core" {
 
 router.post("/login", (req, res) => {
   const { username, password } = req.body;
-  if (username === ADMIN_USERNAME && password === ADMIN_PASSWORD) {
+  const isValidIdentifier = username === ADMIN_USERNAME || username === ADMIN_EMAIL;
+  if (isValidIdentifier && password === ADMIN_PASSWORD) {
     if (req.session) {
       req.session.authenticated = true;
-      req.session.username = username;
+      req.session.username = ADMIN_USERNAME;
     }
     res.json({ success: true, message: "Login successful" });
   } else {
